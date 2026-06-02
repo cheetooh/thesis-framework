@@ -15,7 +15,7 @@ container image (GHCR) and consumed by a developer's project (see the companion
    CI pipeline (GitHub Actions)
         │
         ├── boots target API (vulnerable mode)
-        ├── BASELINE:  OWASP ZAP  api-scan  ─┐
+        ├── BASELINE:  OWASP ZAP (tuned)    ─┐
         ├── FRAMEWORK: GenAI DAST scan       ├─► findings
         └── SCORING:   compare vs ground truth ◄┘
                  │
@@ -28,7 +28,7 @@ container image (GHCR) and consumed by a developer's project (see the companion
 | Path | Purpose |
 |------|---------|
 | `ground_truth/vampi_ground_truth.yaml` | Known VAMPI vulnerabilities mapped to OWASP API Top 10 (2023). The scoring oracle. |
-| `benchmarks/zap/run-zap-scan.sh` | Runs OWASP ZAP `zap-api-scan.py` against a target's OpenAPI spec; captures JSON/HTML/MD reports + timing. |
+| `benchmarks/zap/run-zap-scan.sh` | Runs a **tuned** OWASP ZAP scan (JWT-authenticated + HIGH attack strength) against a target's OpenAPI spec; captures JSON/HTML/MD reports + timing. |
 | `scoring/score.py` | Parses tool findings, maps to OWASP categories, computes recall/precision/F1 vs ground truth. |
 | `framework/` | The GenAI DAST framework (test-case generator, executor, analyser, CI integrator). Containerised and published to GHCR. |
 | `results/zap/` | Timestamped ZAP scan outputs. |
@@ -51,7 +51,7 @@ Metrics (per the thesis Phase 3 plan):
 
 With VAMPI running (`cd thesis-target/vampi && docker compose up -d`):
 
-**OWASP ZAP baseline** — `run-zap-scan.sh <label> <host-spec-url> <docker-network> <in-network-base-url>`:
+**OWASP ZAP (tuned: authenticated + HIGH attack strength)** — `run-zap-scan.sh <label> <host-spec-url> <docker-network> <in-network-base-url>`:
 
 ```bash
 benchmarks/zap/run-zap-scan.sh vampi-vuln \

@@ -1,0 +1,12 @@
+{
+  "label": "vampi-tuned",
+  "tuned": true,
+  "authenticated": true,
+  "host_spec_url": "http://localhost:5002/openapi.json",
+  "base_url": "http://localhost:5002",
+  "network": "host",
+  "zap_image": "ghcr.io/zaproxy/zaproxy:stable",
+  "timestamp": "20260602-234527",
+  "duration_seconds": 79.64,
+  "zap_exit_code": 0
+}

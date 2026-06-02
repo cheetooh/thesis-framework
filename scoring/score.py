@@ -79,6 +79,10 @@ NOISE_PLUGINS = {
     "10038",  # CSP header not set
     "10054",  # Cookie without SameSite
     "10094",  # Base64 disclosure
+    "100001", # Unexpected Content-Type was returned
+    "10027",  # Information Disclosure - Suspicious Comments
+    "10109",  # Modern Web Application
+    "90022",  # Application Error Disclosure (verbose errors / debug)
 }
 
 
@@ -180,8 +184,10 @@ def score(findings, gt, mode, include_noise=False):
         if f["noise"] and not include_noise:
             continue
         if not f["owasp"]:
-            # unmapped, non-noise security finding
-            if f["risk"] >= 1 and include_noise:
+            # An unmapped, non-noise finding that asserts a Medium+ vulnerability
+            # absent from the ground truth is a false positive (e.g. ZAP's
+            # mis-triggered "Buffer Overflow" on this Python API).
+            if f["risk"] >= 2:
                 fp.append(f)
             continue
         matched = any(

@@ -1,0 +1,27 @@
+{
+  "mode": "vulnerable",
+  "present_instances": 9,
+  "TP": 0,
+  "FN": 9,
+  "FP": 1,
+  "recall": 0.0,
+  "precision": 0.0,
+  "f1": 0.0,
+  "noise_findings": 13,
+  "detected": [],
+  "missed": [
+    "VAMPI-01 API8:2023 Security Misconfiguration",
+    "VAMPI-02 API1:2023 Broken Object Level Authorization",
+    "VAMPI-03 API2:2023 Broken Authentication",
+    "VAMPI-04 API2:2023 Broken Authentication",
+    "VAMPI-05 API3:2023 Broken Object Property Level Authorization",
+    "VAMPI-06 API3:2023 Broken Object Property Level Authorization",
+    "VAMPI-07 API5:2023 Broken Function Level Authorization",
+    "VAMPI-08 API4:2023 Unrestricted Resource Consumption",
+    "VAMPI-09 API4:2023 Unrestricted Resource Consumption"
+  ],
+  "false_positives": [
+    "Buffer Overflow"
+  ],
+  "tool": "zap"
+}
