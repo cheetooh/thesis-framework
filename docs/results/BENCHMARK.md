@@ -43,7 +43,7 @@ secure build fixes).
 | GenAI framework (gpt-4o) | vulnerable | ~230 s |
 | GenAI framework (gpt-4o) | secure | ~210 s |
 
-The GenAI framework trades a higher per-run cost (LLM latency: 9 payload-generation
+The GenAI framework trades a higher per-run cost (LLM latency: 4 payload-generation
 + 9 verification calls) for materially higher detection. Both run unattended inside
 GitHub Actions on every push, with no manual tuning.
 
