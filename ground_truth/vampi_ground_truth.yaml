@@ -1,16 +1,12 @@
-# Ground-truth vulnerability map for VAMPI (erev0s/VAmPI)
+# Ground-truth vulnerability map for VAMPI (erev0s/VAmPI), vulnerable mode.
 # DERIVED FROM SOURCE CODE (api_views/*.py, models/user_model.py), not just the
-# README, so each instance is verifiable. Maps every confirmed VAMPI flaw to the
-# affected endpoint and its OWASP API Security Top 10 (2023) category. Used to
-# score detection tools (OWASP ZAP baseline and the GenAI framework).
-#
-# present_when_vulnerable: exists when VAMPI runs with vulnerable=1 (positive set
-#                          for the :5002 instance).
-# present_when_secure:     true => the flaw remains even with vulnerable=0 (bad
-#                          practice not gated by the switch). A tool flagging a
-#                          present_when_secure=false item on :5001 is a FALSE POSITIVE.
+# README, so each instance is verifiable. The target is run with vulnerable=1.
+# Maps every confirmed VAMPI flaw to the affected endpoint and its OWASP API
+# Security Top 10 (2023) category. Used to score detection tools (OWASP ZAP
+# baseline and the GenAI framework) on recall, precision and F1.
 
 target: VAmPI
+mode: vulnerable            # vulnerable=1
 source: https://github.com/erev0s/VAmPI
 owasp_standard: OWASP API Security Top 10 - 2023
 
@@ -20,8 +16,6 @@ vulnerabilities:
     endpoint: /users/v1/{username}
     method: GET
     owasp: "API8:2023 Security Misconfiguration"
-    present_when_vulnerable: true
-    present_when_secure: false
     detail: User.get_user() builds a raw SQL string with the username when vuln=1.
 
   - id: VAMPI-02
@@ -29,8 +23,6 @@ vulnerabilities:
     endpoint: /books/v1/{book}
     method: GET
     owasp: "API1:2023 Broken Object Level Authorization"
-    present_when_vulnerable: true
-    present_when_secure: false
     detail: get_by_title() returns any user's book+secret when vuln=1 (no owner check).
 
   - id: VAMPI-03
@@ -38,8 +30,6 @@ vulnerabilities:
     endpoint: /users/v1/login
     method: POST
     owasp: "API2:2023 Broken Authentication"
-    present_when_vulnerable: true
-    present_when_secure: false
     detail: login_user() returns distinct messages for bad-user vs bad-password when vuln=1.
 
   - id: VAMPI-04
@@ -47,17 +37,13 @@ vulnerabilities:
     endpoint: /me
     method: GET
     owasp: "API2:2023 Broken Authentication"
-    present_when_vulnerable: true
-    present_when_secure: true
-    detail: SECRET_KEY='random' (config.py) signs HS256 JWTs regardless of switch; tokens are forgeable.
+    detail: SECRET_KEY='random' (config.py) signs HS256 JWTs; tokens are forgeable.
 
   - id: VAMPI-05
     name: Mass Assignment - self-grant admin at registration
     endpoint: /users/v1/register
     method: POST
     owasp: "API3:2023 Broken Object Property Level Authorization"
-    present_when_vulnerable: true
-    present_when_secure: false
     detail: register_user() honours an 'admin' field from the body when vuln=1.
 
   - id: VAMPI-06
@@ -65,17 +51,13 @@ vulnerabilities:
     endpoint: /users/v1/_debug
     method: GET
     owasp: "API3:2023 Broken Object Property Level Authorization"
-    present_when_vulnerable: true
-    present_when_secure: true
-    detail: debug() returns every user's plaintext password; not gated by the switch and undocumented.
+    detail: debug() returns every user's plaintext password; undocumented endpoint.
 
   - id: VAMPI-07
     name: Broken Function Level Authorization - change another user's password
     endpoint: /users/v1/{username}/password
     method: PUT
     owasp: "API5:2023 Broken Function Level Authorization"
-    present_when_vulnerable: true
-    present_when_secure: false
     detail: update_password() updates the path-param user's password (not the caller's) when vuln=1.
 
   - id: VAMPI-08
@@ -83,8 +65,6 @@ vulnerabilities:
     endpoint: /users/v1/{username}/email
     method: PUT
     owasp: "API4:2023 Unrestricted Resource Consumption"
-    present_when_vulnerable: true
-    present_when_secure: false
     detail: update_email() uses a catastrophic-backtracking regex when vuln=1.
 
   - id: VAMPI-09
@@ -92,11 +72,7 @@ vulnerabilities:
     endpoint: /users/v1/login
     method: POST
     owasp: "API4:2023 Unrestricted Resource Consumption"
-    present_when_vulnerable: true
-    present_when_secure: true
-    detail: No throttling on authentication; enables brute force / credential stuffing in both modes.
+    detail: No throttling on authentication; enables brute force / credential stuffing.
 
 totals:
   instances: 9
-  positives_when_vulnerable: 9
-  positives_when_secure: 3   # VAMPI-04, VAMPI-06, VAMPI-09 remain when vulnerable=0

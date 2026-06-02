@@ -14,13 +14,13 @@ container image (GHCR) and consumed by a developer's project (see the companion
         ▼
    CI pipeline (GitHub Actions)
         │
-        ├── boots target API (vulnerable + secure)
+        ├── boots target API (vulnerable mode)
         ├── BASELINE:  OWASP ZAP  api-scan  ─┐
         ├── FRAMEWORK: GenAI DAST scan       ├─► findings
         └── SCORING:   compare vs ground truth ◄┘
                  │
                  ▼
-        recall / precision / F1 / FPR / CI overhead
+        recall / precision / F1 / CI overhead
 ```
 
 ## Layout
@@ -29,25 +29,22 @@ container image (GHCR) and consumed by a developer's project (see the companion
 |------|---------|
 | `ground_truth/vampi_ground_truth.yaml` | Known VAMPI vulnerabilities mapped to OWASP API Top 10 (2023). The scoring oracle. |
 | `benchmarks/zap/run-zap-scan.sh` | Runs OWASP ZAP `zap-api-scan.py` against a target's OpenAPI spec; captures JSON/HTML/MD reports + timing. |
-| `scoring/score.py` | Parses tool findings, maps to OWASP categories, computes recall/precision/F1/FPR vs ground truth. |
+| `scoring/score.py` | Parses tool findings, maps to OWASP categories, computes recall/precision/F1 vs ground truth. |
 | `framework/` | The GenAI DAST framework (test-case generator, executor, analyser, CI integrator). Containerised and published to GHCR. |
 | `results/zap/` | Timestamped ZAP scan outputs. |
 | `docs/results/BENCHMARK.md` | Head-to-head results (framework vs ZAP) used in Chapter 4. |
 
 ## Evaluation design
 
-VAMPI runs in two modes simultaneously (see `thesis-target/vampi/docker-compose.yaml`):
-
-- **vulnerable** (`vulnerable=1`, port 5002) → positive set for **recall** / true positives.
-- **secure** (`vulnerable=0`, port 5001) → control for the **false-positive rate**;
-  any flag here on a *fixed* vulnerability is a false positive.
+VAMPI runs in **vulnerable mode** (`vulnerable=1`, port 5002) as the target. Each
+tool's findings are scored against the 9-instance ground truth.
 
 Metrics (per the thesis Phase 3 plan):
 
 - **Recall** = TP / (TP + FN) — share of real OWASP API Top 10 issues detected.
-- **Precision** = TP / (TP + FP) — share of reported issues that are real.
+- **Precision** = TP / (TP + FP) — share of reported issues that are real (a
+  reported vulnerability that is not in the ground truth is a false positive).
 - **F1** = harmonic mean of precision and recall.
-- **False-positive rate** — flags raised on the secure instance for fixed issues.
 - **CI overhead** — wall-clock added to the pipeline (captured in `run-meta.json`).
 
 ## Quick start
@@ -76,6 +73,6 @@ python3 scoring/score.py --tool framework --mode vulnerable out/findings.json
 
 The companion `thesis-target` repo runs both tools automatically on every push via
 GitHub Actions (`.github/workflows/security-scan.yml`) — either on GitHub-hosted
-runners (which build a fresh dual-mode VAMPI) or on a self-hosted runner (which
+runners (which build a fresh VAMPI) or on a self-hosted runner (which
 scans a live local container). The framework image is published by this repo's
 `.github/workflows/publish.yml`.

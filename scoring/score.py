@@ -9,8 +9,8 @@ framework (Chapter 4 of the thesis).
 Methodology
 -----------
 The oracle is ground_truth/vampi_ground_truth.yaml: a fixed set of N
-vulnerability *instances*, each = (endpoint, method, OWASP category), with flags
-for whether the instance exists in vulnerable vs secure mode.
+vulnerability *instances*, each = (endpoint, method, OWASP category), present in
+the target's vulnerable configuration.
 
 A ground-truth instance counts as DETECTED (true positive) when the tool emits at
 least one finding that (a) maps to the same OWASP category (via the mapping
@@ -23,12 +23,10 @@ with --include-noise).
     recall    = TP / (TP + FN)
     precision = TP / (TP + FP)
     F1        = 2*P*R / (P + R)
-    FPR proxy = FP raised against the secure instance (control)
 
 Usage
 -----
     python3 score.py --tool zap --mode vulnerable <zap_report.json>
-    python3 score.py --tool zap --mode secure     <zap_report.json>
     python3 score.py --tool framework --mode vulnerable <framework_findings.json>
 """
 import argparse, json, os, re, sys
@@ -162,8 +160,8 @@ def parse_zap(report_path, base_hosts=("vampi-vulnerable:5000", "vampi-secure:50
 
 
 def score(findings, gt, mode, include_noise=False):
-    present_key = "present_when_vulnerable" if mode == "vulnerable" else "present_when_secure"
-    gt_present = [g for g in gt if g.get(present_key)]
+    # The target runs in vulnerable mode, so every ground-truth instance is present.
+    gt_present = gt
 
     # True positives / false negatives over present ground-truth instances.
     detected, missed = [], []

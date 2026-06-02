@@ -14,7 +14,6 @@
 #   ./run-zap-scan.sh <label> <host-spec-url> <network> <in-network-base-url>
 # Example:
 #   ./run-zap-scan.sh vampi-vuln   http://localhost:5002/openapi.json vampi_default http://vampi-vulnerable:5000
-#   ./run-zap-scan.sh vampi-secure http://localhost:5001/openapi.json vampi_default http://vampi-secure:5000
 set -euo pipefail
 
 LABEL="${1:?need a label, e.g. vampi-vuln}"
