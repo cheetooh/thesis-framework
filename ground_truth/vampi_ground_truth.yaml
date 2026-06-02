@@ -1,18 +1,14 @@
 # Ground-truth vulnerability map for VAMPI (erev0s/VAmPI)
-# Maps each known, documented VAMPI vulnerability to the affected endpoint and
-# its OWASP API Security Top 10 (2023) category. Used to score detection tools
-# (OWASP ZAP baseline and the GenAI framework) on recall, precision and F1.
+# DERIVED FROM SOURCE CODE (api_views/*.py, models/user_model.py), not just the
+# README, so each instance is verifiable. Maps every confirmed VAMPI flaw to the
+# affected endpoint and its OWASP API Security Top 10 (2023) category. Used to
+# score detection tools (OWASP ZAP baseline and the GenAI framework).
 #
-# Each item is a distinct "vulnerability instance" = (endpoint, method, owasp).
-# present_when_vulnerable: true  -> exists only when VAMPI runs with vulnerable=1
-#                                   (used as positive set against the :5002 instance)
-# present_when_secure:    false  -> fixed when vulnerable=0 (so any flag on :5001
-#                                   for this item is a FALSE POSITIVE)
-#
-# Notes on scoping: VAMPI's `vulnerable` switch disables the API-logic flaws
-# (BOLA, BFLA, mass assignment, excessive data exposure, user enumeration,
-# SQLi string-building) but some bad-practice issues (debug endpoint exposure,
-# weak JWT key, no rate limiting) remain by design even when vulnerable=0.
+# present_when_vulnerable: exists when VAMPI runs with vulnerable=1 (positive set
+#                          for the :5002 instance).
+# present_when_secure:     true => the flaw remains even with vulnerable=0 (bad
+#                          practice not gated by the switch). A tool flagging a
+#                          present_when_secure=false item on :5001 is a FALSE POSITIVE.
 
 target: VAmPI
 source: https://github.com/erev0s/VAmPI
@@ -20,100 +16,87 @@ owasp_standard: OWASP API Security Top 10 - 2023
 
 vulnerabilities:
   - id: VAMPI-01
-    name: SQL Injection (user lookup)
+    name: SQL Injection on user lookup
     endpoint: /users/v1/{username}
     method: GET
-    owasp: "API8:2023 Security Misconfiguration"   # injection via string-built query
-    also: ["Injection"]
+    owasp: "API8:2023 Security Misconfiguration"
     present_when_vulnerable: true
     present_when_secure: false
-    detail: Username is concatenated into a raw SQL query when vulnerable=1.
+    detail: User.get_user() builds a raw SQL string with the username when vuln=1.
 
   - id: VAMPI-02
-    name: SQL Injection (book lookup)
-    endpoint: /books/v1/{book}
-    method: GET
-    owasp: "API8:2023 Security Misconfiguration"
-    also: ["Injection"]
-    present_when_vulnerable: true
-    present_when_secure: false
-    detail: Book title concatenated into raw SQL query when vulnerable=1.
-
-  - id: VAMPI-03
-    name: Broken Object Level Authorization (book secret)
+    name: Broken Object Level Authorization on book secret
     endpoint: /books/v1/{book}
     method: GET
     owasp: "API1:2023 Broken Object Level Authorization"
     present_when_vulnerable: true
     present_when_secure: false
-    detail: Any authenticated user can read another user's book secret.
+    detail: get_by_title() returns any user's book+secret when vuln=1 (no owner check).
 
-  - id: VAMPI-04
-    name: Broken Authentication - user/password enumeration
+  - id: VAMPI-03
+    name: Broken Authentication - username/password enumeration
     endpoint: /users/v1/login
     method: POST
     owasp: "API2:2023 Broken Authentication"
     present_when_vulnerable: true
     present_when_secure: false
-    detail: Distinct error messages reveal whether a username exists.
+    detail: login_user() returns distinct messages for bad-user vs bad-password when vuln=1.
 
-  - id: VAMPI-05
-    name: Broken Authentication - weak JWT signing key
-    endpoint: /users/v1/login
-    method: POST
+  - id: VAMPI-04
+    name: Broken Authentication - weak/static JWT signing key
+    endpoint: /me
+    method: GET
     owasp: "API2:2023 Broken Authentication"
     present_when_vulnerable: true
-    present_when_secure: true   # SECRET_KEY='random' is weak regardless of switch
-    detail: JWT signed with hardcoded weak key 'random', allowing token forgery.
+    present_when_secure: true
+    detail: SECRET_KEY='random' (config.py) signs HS256 JWTs regardless of switch; tokens are forgeable.
 
-  - id: VAMPI-06
-    name: Mass Assignment (privilege escalation on register)
+  - id: VAMPI-05
+    name: Mass Assignment - self-grant admin at registration
     endpoint: /users/v1/register
     method: POST
     owasp: "API3:2023 Broken Object Property Level Authorization"
     present_when_vulnerable: true
     present_when_secure: false
-    detail: Registration accepts admin=true, granting admin role via mass assignment.
+    detail: register_user() honours an 'admin' field from the body when vuln=1.
 
-  - id: VAMPI-07
+  - id: VAMPI-06
     name: Excessive Data Exposure via debug endpoint
     endpoint: /users/v1/_debug
     method: GET
     owasp: "API3:2023 Broken Object Property Level Authorization"
-    also: ["API9:2023 Improper Inventory Management"]
     present_when_vulnerable: true
-    present_when_secure: true   # debug endpoint remains exposed by design
-    detail: Returns all users including plaintext passwords; undocumented debug route.
+    present_when_secure: true
+    detail: debug() returns every user's plaintext password; not gated by the switch and undocumented.
 
-  - id: VAMPI-08
-    name: Broken Function Level Authorization - unauthorized password change
+  - id: VAMPI-07
+    name: Broken Function Level Authorization - change another user's password
     endpoint: /users/v1/{username}/password
     method: PUT
     owasp: "API5:2023 Broken Function Level Authorization"
     present_when_vulnerable: true
     present_when_secure: false
-    detail: A user can change another user's password.
+    detail: update_password() updates the path-param user's password (not the caller's) when vuln=1.
 
-  - id: VAMPI-09
-    name: Broken Function Level Authorization - unauthorized user delete
-    endpoint: /users/v1/{username}
-    method: DELETE
-    owasp: "API5:2023 Broken Function Level Authorization"
+  - id: VAMPI-08
+    name: Unrestricted Resource Consumption - Regex DoS on email update
+    endpoint: /users/v1/{username}/email
+    method: PUT
+    owasp: "API4:2023 Unrestricted Resource Consumption"
     present_when_vulnerable: true
     present_when_secure: false
-    detail: Non-admin can delete arbitrary users when vulnerable=1.
+    detail: update_email() uses a catastrophic-backtracking regex when vuln=1.
 
-  - id: VAMPI-10
-    name: Unrestricted Resource Consumption - no rate limiting
+  - id: VAMPI-09
+    name: Unrestricted Resource Consumption - no rate limiting on login
     endpoint: /users/v1/login
     method: POST
     owasp: "API4:2023 Unrestricted Resource Consumption"
     present_when_vulnerable: true
-    present_when_secure: true   # no rate limiting in either mode
-    detail: No rate limiting enables credential brute force / RegexDOS.
+    present_when_secure: true
+    detail: No throttling on authentication; enables brute force / credential stuffing in both modes.
 
-# Summary counts for convenience (recomputed by scoring/score.py)
 totals:
-  instances: 10
-  positives_when_vulnerable: 10
-  positives_when_secure: 3   # VAMPI-05, VAMPI-07, VAMPI-10 remain in secure mode
+  instances: 9
+  positives_when_vulnerable: 9
+  positives_when_secure: 3   # VAMPI-04, VAMPI-06, VAMPI-09 remain when vulnerable=0

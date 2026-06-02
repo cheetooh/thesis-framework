@@ -1,0 +1,38 @@
+name: Publish framework image
+
+# Builds the GenAI DAST framework container and pushes it to GHCR, so the
+# target project's CI can pull and run it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'framework/**'
+      - '.github/workflows/publish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: framework
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/thesis-framework:latest
+            ghcr.io/${{ github.repository_owner }}/thesis-framework:${{ github.sha }}
