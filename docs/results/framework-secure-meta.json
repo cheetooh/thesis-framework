@@ -1,0 +1,9 @@
+{
+  "mode": "secure",
+  "base_url": "http://localhost:5001",
+  "model": "gpt-4o",
+  "llm_enabled": true,
+  "duration_seconds": 211.8,
+  "n_candidates": 9,
+  "n_findings": 3
+}

@@ -1,0 +1,9 @@
+{
+  "mode": "vulnerable",
+  "base_url": "http://localhost:5002",
+  "model": "gpt-4o",
+  "llm_enabled": true,
+  "duration_seconds": 229.67,
+  "n_candidates": 9,
+  "n_findings": 9
+}

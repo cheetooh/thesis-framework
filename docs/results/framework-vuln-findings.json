@@ -1,0 +1,137 @@
+[
+  {
+    "gid": "VAMPI-01",
+    "name": "SQL Injection on user lookup",
+    "owasp": "API8:2023 Security Misconfiguration",
+    "endpoint": "/users/v1/{username}",
+    "paths": [
+      "/users/v1/{username}"
+    ],
+    "risk": 3,
+    "confidence": 0.95,
+    "rationale": "The evidence shows that a SQL injection payload in the username path segment results in a successful response with user data, while a non-existent username returns a 404 error. This indicates that the application is likely constructing SQL queries using unsanitized input, leading to a security misconfiguration vulnerability.",
+    "remediation": "Implement parameterized queries or prepared statements to prevent SQL injection. Validate and sanitize all user inputs, especially those used in SQL queries.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-02",
+    "name": "Broken Object Level Authorization on book secret",
+    "owasp": "API1:2023 Broken Object Level Authorization",
+    "endpoint": "/books/v1/{book}",
+    "paths": [
+      "/books/v1/{book}"
+    ],
+    "risk": 3,
+    "confidence": 1.0,
+    "rationale": "The attacker, who owns no books, was able to successfully request and receive details of a book owned by another user ('name1'). The response included sensitive information ('secret for bookTitle84') and confirmed the owner as 'name1', demonstrating a lack of proper authorization checks.",
+    "remediation": "Implement proper object-level authorization checks to ensure that users can only access resources they own. Verify the ownership of the requested resource against the authenticated user's identity before granting access.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-03",
+    "name": "Broken Authentication - user/password enumeration",
+    "owasp": "API2:2023 Broken Authentication",
+    "endpoint": "/users/v1/login",
+    "paths": [
+      "/users/v1/login"
+    ],
+    "risk": 3,
+    "confidence": 1.0,
+    "rationale": "The API returns different error messages for incorrect passwords and non-existent usernames, allowing an attacker to enumerate valid usernames. This behavior confirms the presence of a broken authentication vulnerability.",
+    "remediation": "Standardize error messages for login failures to avoid revealing whether a username exists. Use a generic message like 'Invalid username or password' for all authentication failures.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-04",
+    "name": "Broken Authentication - weak JWT signing key",
+    "owasp": "API2:2023 Broken Authentication",
+    "endpoint": "/me",
+    "paths": [
+      "/me"
+    ],
+    "risk": 3,
+    "confidence": 0.9,
+    "rationale": "The evidence shows that a forged JWT signed with the key 'random' was accepted by the API, resulting in a successful response (HTTP 200) and access to user 'name1's profile. This indicates that the signing key is guessable, which is a hallmark of broken authentication.",
+    "remediation": "Use a strong, randomly generated secret key for signing JWTs and ensure it is stored securely. Consider implementing additional security measures such as rotating keys regularly and using asymmetric signing algorithms like RS256.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-05",
+    "name": "Mass Assignment - self-grant admin",
+    "owasp": "API3:2023 Broken Object Property Level Authorization",
+    "endpoint": "/users/v1/register",
+    "paths": [
+      "/users/v1/register"
+    ],
+    "risk": 3,
+    "confidence": 1.0,
+    "rationale": "The evidence shows that a user was able to register with an 'admin' property set to true, and upon checking their profile, the 'admin' status was indeed true. This indicates a lack of proper authorization checks on object properties during registration, allowing privilege escalation.",
+    "remediation": "Implement server-side validation to ignore or reject unauthorized properties during user registration. Ensure that roles and permissions are assigned based on server-side logic rather than client input.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-06",
+    "name": "Excessive Data Exposure via debug endpoint",
+    "owasp": "API3:2023 Broken Object Property Level Authorization",
+    "endpoint": "/users/v1/_debug",
+    "paths": [
+      "/users/v1/_debug"
+    ],
+    "risk": 3,
+    "confidence": 1.0,
+    "rationale": "The evidence shows that an unauthenticated request to the undocumented endpoint /users/v1/_debug returns sensitive user information, including plaintext passwords. This indicates a lack of proper authorization checks at the object property level, allowing unauthorized access to sensitive data.",
+    "remediation": "Implement proper authorization checks to ensure that only authenticated and authorized users can access sensitive endpoints. Additionally, avoid exposing sensitive information such as passwords in API responses, even to authorized users.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-07",
+    "name": "Broken Function Level Authorization - change other user's password",
+    "owasp": "API5:2023 Broken Function Level Authorization",
+    "endpoint": "/users/v1/{username}/password",
+    "paths": [
+      "/users/v1/{username}/password"
+    ],
+    "risk": 3,
+    "confidence": 1.0,
+    "rationale": "The evidence shows that a low-privilege attacker was able to change the password of another user ('name2') by sending a PUT request to the /users/v1/name2/password endpoint. The attacker then successfully logged in as 'name2' using the new password they set. This indicates a lack of proper authorization checks at the function level, allowing unauthorized users to modify sensitive data of other users.",
+    "remediation": "Implement proper authorization checks to ensure that only authorized users can change their own passwords. This can be achieved by verifying that the user making the request is the same as the user whose password is being changed, typically by using authentication tokens and checking user roles and permissions.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-09",
+    "name": "Unrestricted Resource Consumption - no rate limiting",
+    "owasp": "API4:2023 Unrestricted Resource Consumption",
+    "endpoint": "/users/v1/login",
+    "paths": [
+      "/users/v1/login"
+    ],
+    "risk": 3,
+    "confidence": 0.9,
+    "rationale": "The evidence shows that 20 rapid failed login attempts were made without any indication of rate limiting or account lockout mechanisms being triggered. Each request was processed successfully with a 200 status code, and there were no 429 responses or Retry-After headers, which are typical indicators of rate limiting. This suggests that the API does not have adequate protections against brute-force attacks, which is a characteristic of unrestricted resource consumption vulnerabilities.",
+    "remediation": "Implement rate limiting on the login endpoint to restrict the number of login attempts from a single IP address or account within a given timeframe. Additionally, consider implementing account lockout mechanisms after a certain number of failed attempts to further protect against brute-force attacks.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-08",
+    "name": "Unrestricted Resource Consumption - Regex DoS",
+    "owasp": "API4:2023 Unrestricted Resource Consumption",
+    "endpoint": "/users/v1/{username}/email",
+    "paths": [
+      "/users/v1/{username}/email"
+    ],
+    "risk": 3,
+    "confidence": 0.95,
+    "rationale": "The evidence shows a significant difference in response time between a normal email update request (95 ms) and a crafted payload designed to trigger catastrophic regex backtracking (8000 ms timeout). This indicates that the regex used for email validation is susceptible to ReDoS, as the crafted input causes the server to hang and eventually time out.",
+    "remediation": "Review and refactor the regex used for email validation to ensure it is not susceptible to catastrophic backtracking. Consider using non-backtracking regex patterns or limiting the input length to mitigate the risk of ReDoS.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  }
+]

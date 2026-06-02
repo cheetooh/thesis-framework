@@ -1,0 +1,47 @@
+[
+  {
+    "gid": "VAMPI-04",
+    "name": "Broken Authentication - weak JWT signing key",
+    "owasp": "API2:2023 Broken Authentication",
+    "endpoint": "/me",
+    "paths": [
+      "/me"
+    ],
+    "risk": 3,
+    "confidence": 0.9,
+    "rationale": "The evidence shows that a forged JWT signed with a weak key ('random') was accepted by the API, allowing unauthorized access to 'name1's profile. This indicates that the signing key is guessable, which is a hallmark of broken authentication.",
+    "remediation": "Use a strong, randomly generated secret key for signing JWTs and ensure it is stored securely. Implement rate limiting and monitoring to detect and prevent brute force attacks on JWT signing keys.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-06",
+    "name": "Excessive Data Exposure via debug endpoint",
+    "owasp": "API3:2023 Broken Object Property Level Authorization",
+    "endpoint": "/users/v1/_debug",
+    "paths": [
+      "/users/v1/_debug"
+    ],
+    "risk": 3,
+    "confidence": 1.0,
+    "rationale": "The evidence shows that an unauthenticated request to the undocumented endpoint /users/v1/_debug returns sensitive user information, including plaintext passwords. This indicates a lack of proper authorization checks at the object property level, allowing unauthorized access to sensitive data.",
+    "remediation": "Implement proper authorization checks to ensure that only authenticated and authorized users can access sensitive endpoints. Additionally, avoid exposing sensitive information such as passwords in API responses, even to authorized users.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  },
+  {
+    "gid": "VAMPI-09",
+    "name": "Unrestricted Resource Consumption - no rate limiting",
+    "owasp": "API4:2023 Unrestricted Resource Consumption",
+    "endpoint": "/users/v1/login",
+    "paths": [
+      "/users/v1/login"
+    ],
+    "risk": 3,
+    "confidence": 0.9,
+    "rationale": "The evidence shows that 20 rapid failed login attempts were processed without any rate limiting or account lockout mechanisms being triggered. The absence of HTTP 429 responses or Retry-After headers indicates that the API does not have protections against brute-force attacks, which is a characteristic of unrestricted resource consumption vulnerabilities.",
+    "remediation": "Implement rate limiting and account lockout mechanisms to prevent brute-force attacks. Consider using exponential backoff for failed login attempts and provide appropriate HTTP 429 responses with Retry-After headers.",
+    "verdict_source": "llm",
+    "vulnerable": true
+  }
+]
