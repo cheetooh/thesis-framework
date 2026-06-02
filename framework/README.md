@@ -36,7 +36,7 @@ Outputs in `--out`:
 ```bash
 docker run --rm --network host -e OPENAI_API_KEY \
   -v "$PWD/out":/work \
-  ghcr.io/<owner>/thesis-framework:latest \
+  ghcr.io/cheetooh/thesis-framework:latest \
   --target http://localhost:5002 --mode vulnerable --out /work
 ```
 

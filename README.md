@@ -30,9 +30,9 @@ container image (GHCR) and consumed by a developer's project (see the companion
 | `ground_truth/vampi_ground_truth.yaml` | Known VAMPI vulnerabilities mapped to OWASP API Top 10 (2023). The scoring oracle. |
 | `benchmarks/zap/run-zap-scan.sh` | Runs OWASP ZAP `zap-api-scan.py` against a target's OpenAPI spec; captures JSON/HTML/MD reports + timing. |
 | `scoring/score.py` | Parses tool findings, maps to OWASP categories, computes recall/precision/F1/FPR vs ground truth. |
-| `framework/` | The GenAI DAST framework (test-case generator, executor, analyser, CI integrator). *(in progress)* |
+| `framework/` | The GenAI DAST framework (test-case generator, executor, analyser, CI integrator). Containerised and published to GHCR. |
 | `results/zap/` | Timestamped ZAP scan outputs. |
-| `docs/` | Methodology notes, mapping tables, figures for Chapter 4. |
+| `docs/results/BENCHMARK.md` | Head-to-head results (framework vs ZAP) used in Chapter 4. |
 
 ## Evaluation design
 
@@ -50,11 +50,32 @@ Metrics (per the thesis Phase 3 plan):
 - **False-positive rate** — flags raised on the secure instance for fixed issues.
 - **CI overhead** — wall-clock added to the pipeline (captured in `run-meta.json`).
 
-## Quick start (baseline)
+## Quick start
+
+With VAMPI running (`cd thesis-target/vampi && docker compose up -d`):
+
+**OWASP ZAP baseline** — `run-zap-scan.sh <label> <host-spec-url> <docker-network> <in-network-base-url>`:
 
 ```bash
-# from the repo root, with VAMPI already up on the vampi_default docker network
-benchmarks/zap/run-zap-scan.sh vampi-vuln   http://vampi-vulnerable:5000/openapi.json vampi_default
-benchmarks/zap/run-zap-scan.sh vampi-secure http://vampi-secure:5000/openapi.json     vampi_default
+benchmarks/zap/run-zap-scan.sh vampi-vuln \
+  http://localhost:5002/openapi.json vampi_default http://vampi-vulnerable:5000
 python3 scoring/score.py --tool zap --mode vulnerable results/zap/vampi-vuln-latest/report.json
 ```
+
+**GenAI framework** (needs `OPENAI_API_KEY`; see `framework/README.md`):
+
+```bash
+# via the published image
+docker run --rm --network host -e OPENAI_API_KEY \
+  -v "$PWD/out":/work ghcr.io/cheetooh/thesis-framework:latest \
+  --target http://localhost:5002 --mode vulnerable --out /work
+python3 scoring/score.py --tool framework --mode vulnerable out/findings.json
+```
+
+## CI
+
+The companion `thesis-target` repo runs both tools automatically on every push via
+GitHub Actions (`.github/workflows/security-scan.yml`) — either on GitHub-hosted
+runners (which build a fresh dual-mode VAMPI) or on a self-hosted runner (which
+scans a live local container). The framework image is published by this repo's
+`.github/workflows/publish.yml`.
