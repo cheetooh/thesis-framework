@@ -28,6 +28,10 @@ OUT_DIR="$(cd "$HERE/../../results/zap" && pwd)"
 TS="$(date +%Y%m%d-%H%M%S)"
 RUN_DIR="$OUT_DIR/${LABEL}-${TS}"
 mkdir -p "$RUN_DIR"
+# The ZAP container writes reports as its own 'zap' user (uid 1000). On CI
+# runners the host user differs (e.g. uid 1001), so make the mount world-writable
+# to avoid "Permission denied: /zap/wrk/report.html".
+chmod 777 "$RUN_DIR"
 
 echo "==> ZAP API scan"
 echo "    label:    $LABEL"
