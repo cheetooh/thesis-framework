@@ -23,7 +23,7 @@ creation, cross-user access). This is the hybrid design described in Chapter 3.
 python -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 export OPENAI_API_KEY=sk-...
-python -m genai_dast.scan --target http://localhost:5002 --mode vulnerable --out results
+python -m genai_dast.scan --target http://localhost:5000 --mode vulnerable --out results
 ```
 
 Outputs in `--out`:
@@ -37,7 +37,7 @@ Outputs in `--out`:
 docker run --rm --network host -e OPENAI_API_KEY \
   -v "$PWD/out":/work \
   ghcr.io/cheetooh/thesis-framework:latest \
-  --target http://localhost:5002 --mode vulnerable --out /work
+  --target http://localhost:5000 --mode vulnerable --out /work
 ```
 
 ## Configuration

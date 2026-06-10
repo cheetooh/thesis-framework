@@ -36,7 +36,7 @@ container image (GHCR) and consumed by a developer's project (see the companion
 
 ## Evaluation design
 
-VAMPI runs in **vulnerable mode** (`vulnerable=1`, port 5002) as the target. Each
+VAMPI runs in **vulnerable mode** (`vulnerable=1`, port 5000) as the target. Each
 tool's findings are scored against the 9-instance ground truth.
 
 Metrics (per the thesis Phase 3 plan):
@@ -55,7 +55,7 @@ With VAMPI running (`cd thesis-target/vampi && docker compose up -d`):
 
 ```bash
 benchmarks/zap/run-zap-scan.sh vampi-vuln \
-  http://localhost:5002/openapi.json vampi_default http://vampi-vulnerable:5000
+  http://localhost:5000/openapi.json vampi_default http://vampi-vulnerable:5000
 python3 scoring/score.py --tool zap --mode vulnerable results/zap/vampi-vuln-latest/report.json
 ```
 
@@ -65,7 +65,7 @@ python3 scoring/score.py --tool zap --mode vulnerable results/zap/vampi-vuln-lat
 # via the published image
 docker run --rm --network host -e OPENAI_API_KEY \
   -v "$PWD/out":/work ghcr.io/cheetooh/thesis-framework:latest \
-  --target http://localhost:5002 --mode vulnerable --out /work
+  --target http://localhost:5000 --mode vulnerable --out /work
 python3 scoring/score.py --tool framework --mode vulnerable out/findings.json
 ```
 

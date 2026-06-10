@@ -1,7 +1,7 @@
 # Benchmark results — GenAI framework vs OWASP ZAP
 
 Target: **VAMPI** (erev0s/VAmPI) running in **vulnerable mode** (`vulnerable=1`) on
-port 5002. Oracle: `ground_truth/vampi_ground_truth.yaml` (9 code-verified OWASP
+port 5000. Oracle: `ground_truth/vampi_ground_truth.yaml` (9 code-verified OWASP
 API Security Top 10 (2023) instances).
 
 The ZAP baseline is **tuned**, not default: it authenticates with a real JWT

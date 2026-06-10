@@ -14,7 +14,7 @@ Output:
   * run-meta.json — timing (CI overhead) + config
 
 Usage:
-  python -m genai_dast.scan --target http://localhost:5002 --mode vulnerable \
+  python -m genai_dast.scan --target http://localhost:5000 --mode vulnerable \
       --out /work/results
 """
 from __future__ import annotations

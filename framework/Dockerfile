@@ -15,5 +15,5 @@ ENV PYTHONUNBUFFERED=1
 
 # Args after the image name go to the scanner, e.g.:
 #   docker run --rm -e OPENAI_API_KEY ghcr.io/<owner>/thesis-framework \
-#       --target http://host:5002 --mode vulnerable --out /work
+#       --target http://host:5000 --mode vulnerable --out /work
 ENTRYPOINT ["python", "-m", "genai_dast.scan"]
