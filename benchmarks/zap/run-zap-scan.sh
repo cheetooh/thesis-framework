@@ -15,13 +15,13 @@
 # Usage:
 #   ./run-zap-scan.sh <label> <host-spec-url> <docker-network> <in-network-base-url>
 # Example (self-hosted, scanning the live local container):
-#   ./run-zap-scan.sh vampi-local http://localhost:5002/openapi.json host http://localhost:5002
+#   ./run-zap-scan.sh vampi-local http://localhost:5000/openapi.json host http://localhost:5000
 set -euo pipefail
 
 LABEL="${1:?need a label, e.g. vampi-local}"
-HOST_SPEC_URL="${2:?need a host-reachable OpenAPI URL, e.g. http://localhost:5002/openapi.json}"
+HOST_SPEC_URL="${2:?need a host-reachable OpenAPI URL, e.g. http://localhost:5000/openapi.json}"
 NETWORK="${3:?need the docker network the target is on, e.g. host}"
-BASE_URL="${4:?need the in-network base URL, e.g. http://localhost:5002}"
+BASE_URL="${4:?need the in-network base URL, e.g. http://localhost:5000}"
 
 ZAP_IMAGE="ghcr.io/zaproxy/zaproxy:stable"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -32,6 +32,13 @@ mkdir -p "$RUN_DIR"
 chmod 777 "$RUN_DIR"   # ZAP writes reports as uid 1000
 
 AUTH_BASE="${HOST_SPEC_URL%/openapi.json}"
+
+# 0) Reset the target to a clean state so each scan starts fresh and no wedged
+#    dev-server thread carries over (set RESET_TARGET=0 to skip).
+if [[ "${RESET_TARGET:-1}" != "0" ]]; then
+  HEALTH_URL="$AUTH_BASE/" "$HERE/../reset-target.sh" || echo "    (reset skipped/failed — continuing)"
+fi
+
 echo "==> ZAP TUNED API scan"
 echo "    label:    $LABEL"
 echo "    spec src: $HOST_SPEC_URL"
